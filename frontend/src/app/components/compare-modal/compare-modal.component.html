@@ -1,0 +1,117 @@
+<div class="modal-backdrop animate-fade-in" (click)="closeModal()">
+  <div class="modal-dialog glass-panel" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-left">
+        <span class="badge badge-purple">Advanced Comparison</span>
+        <h2>Side-by-Side Query Plan Diff</h2>
+      </div>
+      <button class="close-btn" (click)="closeModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="modal-body">
+      <!-- Error Banner -->
+      <div class="error-banner glass-panel" *ngIf="errorMessage">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-rose"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- Query Editors Grid -->
+      <div class="queries-input-grid">
+        <!-- Query A -->
+        <div class="query-box glass-panel">
+          <div class="box-header">
+            <span class="box-tag tag-a">Query A (Baseline)</span>
+          </div>
+          <textarea
+            class="sql-textarea font-mono"
+            rows="4"
+            [(ngModel)]="queryA"
+            placeholder="Enter first SQL query..."
+          ></textarea>
+        </div>
+
+        <!-- Query B -->
+        <div class="query-box glass-panel">
+          <div class="box-header">
+            <span class="box-tag tag-b">Query B (Comparison)</span>
+          </div>
+          <textarea
+            class="sql-textarea font-mono"
+            rows="4"
+            [(ngModel)]="queryB"
+            placeholder="Enter second SQL query..."
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="compare-action-bar">
+        <button
+          class="btn btn-primary"
+          (click)="runComparison()"
+          [disabled]="isLoading"
+        >
+          <svg *ngIf="!isLoading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
+          <span *ngIf="isLoading" class="spinner"></span>
+          {{ isLoading ? 'Analyzing Execution Plans...' : 'Compare Query Execution Plans' }}
+        </button>
+      </div>
+
+      <!-- Comparison Results Banner -->
+      <div class="comparison-summary-card glass-panel animate-fade-in" *ngIf="comparisonResult">
+        <div class="summary-top">
+          <span
+            class="badge"
+            [class.badge-green]="comparisonResult.fasterQuery !== 'TIE'"
+            [class.badge-blue]="comparisonResult.fasterQuery === 'TIE'"
+          >
+            {{ comparisonResult.fasterQuery === 'QUERY_A' ? 'Query A Won' : (comparisonResult.fasterQuery === 'QUERY_B' ? 'Query B Won' : 'Execution Time Tie') }}
+          </span>
+          <span class="speedup-badge font-mono" *ngIf="comparisonResult.speedupFactor > 1">
+            ⚡ {{ comparisonResult.speedupFactor }}x Faster
+          </span>
+        </div>
+        <p class="summary-text">{{ comparisonResult.comparisonSummary }}</p>
+
+        <!-- KPI Comparison Grid -->
+        <div class="diff-kpi-grid">
+          <div class="diff-card">
+            <span class="diff-title">Query A Time</span>
+            <span class="diff-val font-mono">{{ comparisonResult.planA.summary.executionTimeMs }} ms</span>
+            <span class="diff-sub font-mono">Cost: {{ comparisonResult.planA.summary.totalCost }}</span>
+          </div>
+          <div class="diff-card">
+            <span class="diff-title">Query B Time</span>
+            <span class="diff-val font-mono">{{ comparisonResult.planB.summary.executionTimeMs }} ms</span>
+            <span class="diff-sub font-mono">Cost: {{ comparisonResult.planB.summary.totalCost }}</span>
+          </div>
+          <div class="diff-card">
+            <span class="diff-title">Time Difference</span>
+            <span class="diff-val text-cyan font-mono">Δ {{ comparisonResult.executionTimeDiffMs }} ms</span>
+            <span class="diff-sub font-mono">Cost Diff: Δ {{ comparisonResult.costDiff }}</span>
+          </div>
+        </div>
+
+        <!-- Plans Side-by-Side Trees -->
+        <div class="trees-split-view">
+          <div class="tree-half">
+            <div class="half-header">
+              <span class="font-mono">Query A Plan: {{ comparisonResult.planA.summary.primaryOperation }}</span>
+            </div>
+            <app-plan-tree [rootNode]="comparisonResult.planA.plan"></app-plan-tree>
+          </div>
+          <div class="tree-half">
+            <div class="half-header">
+              <span class="font-mono">Query B Plan: {{ comparisonResult.planB.summary.primaryOperation }}</span>
+            </div>
+            <app-plan-tree [rootNode]="comparisonResult.planB.plan"></app-plan-tree>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

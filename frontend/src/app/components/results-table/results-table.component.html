@@ -1,0 +1,56 @@
+<div class="results-container glass-panel animate-fade-in" *ngIf="result">
+  <!-- Table Header Bar -->
+  <div class="results-toolbar">
+    <div class="toolbar-left">
+      <span class="badge badge-green">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        {{ result.rowsReturned | number }} rows
+      </span>
+      <span class="toolbar-meta font-mono text-cyan">{{ result.executionTimeMs }} ms</span>
+      <span *ngIf="result.truncated" class="badge badge-amber">Capped at max limit</span>
+    </div>
+
+    <div class="toolbar-right">
+      <button class="btn btn-secondary btn-sm" (click)="exportCsv()" title="Export results to CSV file">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Export CSV
+      </button>
+
+      <!-- Pagination -->
+      <div class="pagination-controls" *ngIf="totalPages > 1">
+        <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <span class="page-indicator font-mono">{{ currentPage }} / {{ totalPages }}</span>
+        <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Viewport -->
+  <div class="table-viewport">
+    <table class="results-grid">
+      <thead>
+        <tr>
+          <th class="row-num-col">#</th>
+          <th *ngFor="let col of result.columns">
+            <div class="th-content">
+              <span class="col-name font-mono">{{ col.name }}</span>
+              <span class="col-type">{{ col.typeName }}</span>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of pagedRows; let i = index">
+          <td class="row-num-cell font-mono">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+          <td *ngFor="let col of result.columns" class="font-mono" [class.cell-null]="row[col.name] === null">
+            {{ row[col.name] !== null ? row[col.name] : 'NULL' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

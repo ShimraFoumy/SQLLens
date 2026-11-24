@@ -1,0 +1,158 @@
+<div class="inspector-panel glass-panel animate-fade-in" *ngIf="node">
+  <div class="inspector-header">
+    <div class="header-left">
+      <span class="badge badge-blue">{{ node.nodeType }}</span>
+      <h3 class="node-title font-mono">{{ node.relationName || node.alias || 'Operation Node' }}</h3>
+    </div>
+    <button class="close-btn" (click)="closeInspector()" title="Close Inspector">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
+
+  <div class="inspector-body">
+    <!-- Key Metric Counters -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Actual Total Time</span>
+        <span class="stat-val text-cyan font-mono">{{ node.actualTotalTime != null ? node.actualTotalTime + ' ms' : 'N/A' }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Exclusive Time</span>
+        <span class="stat-val text-indigo font-mono">{{ node.exclusiveTimeMs != null ? node.exclusiveTimeMs + ' ms' : '0 ms' }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Actual Rows</span>
+        <span class="stat-val text-emerald font-mono">{{ node.actualRows != null ? node.actualRows : 'N/A' }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Total Cost</span>
+        <span class="stat-val text-amber font-mono">{{ node.totalCost != null ? node.totalCost : 'N/A' }}</span>
+      </div>
+    </div>
+
+    <!-- Details Section -->
+    <div class="detail-section" *ngIf="node.relationName || node.indexName">
+      <h4 class="section-heading">Target Relation & Index</h4>
+      <div class="key-value-list">
+        <div class="kv-row" *ngIf="node.relationName">
+          <span class="kv-key">Table:</span>
+          <span class="kv-val font-mono">{{ node.relationName }}</span>
+        </div>
+        <div class="kv-row" *ngIf="node.alias">
+          <span class="kv-key">Alias:</span>
+          <span class="kv-val font-mono">{{ node.alias }}</span>
+        </div>
+        <div class="kv-row" *ngIf="node.indexName">
+          <span class="kv-key">Index Used:</span>
+          <span class="kv-val font-mono text-emerald">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            {{ node.indexName }}
+          </span>
+        </div>
+        <div class="kv-row" *ngIf="node.indexCond">
+          <span class="kv-key">Index Cond:</span>
+          <span class="kv-val font-mono text-cyan">{{ node.indexCond }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="detail-section" *ngIf="node.filter || node.rowsRemovedByFilter">
+      <h4 class="section-heading">Predicate & Filters</h4>
+      <div class="key-value-list">
+        <div class="kv-row" *ngIf="node.filter">
+          <span class="kv-key">Filter:</span>
+          <code class="filter-code">{{ node.filter }}</code>
+        </div>
+        <div class="kv-row" *ngIf="node.rowsRemovedByFilter != null">
+          <span class="kv-key">Rows Discarded:</span>
+          <span class="kv-val font-mono text-rose">{{ node.rowsRemovedByFilter | number }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Join / Hash / Sort Details -->
+    <div class="detail-section" *ngIf="node.joinType || node.hashCond || node.sortKey">
+      <h4 class="section-heading">Operation Mechanics</h4>
+      <div class="key-value-list">
+        <div class="kv-row" *ngIf="node.joinType">
+          <span class="kv-key">Join Type:</span>
+          <span class="kv-val font-mono">{{ node.joinType }}</span>
+        </div>
+        <div class="kv-row" *ngIf="node.hashCond">
+          <span class="kv-key">Hash Condition:</span>
+          <span class="kv-val font-mono text-cyan">{{ node.hashCond }}</span>
+        </div>
+        <div class="kv-row" *ngIf="node.sortKey">
+          <span class="kv-key">Sort Key:</span>
+          <span class="kv-val font-mono">{{ node.sortKey }}</span>
+        </div>
+        <div class="kv-row" *ngIf="node.sortMethod">
+          <span class="kv-key">Sort Method:</span>
+          <span class="kv-val font-mono">{{ node.sortMethod }} ({{ node.sortSpaceUsed }} {{ node.sortSpaceType }})</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estimates vs Actuals -->
+    <div class="detail-section">
+      <h4 class="section-heading">Estimates vs. Actuals</h4>
+      <div class="key-value-list">
+        <div class="kv-row">
+          <span class="kv-key">Cost Range:</span>
+          <span class="kv-val font-mono">{{ node.startupCost }} .. {{ node.totalCost }}</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Plan Rows (Est):</span>
+          <span class="kv-val font-mono">{{ node.planRows | number }}</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Actual Rows:</span>
+          <span class="kv-val font-mono">{{ node.actualRows | number }}</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Actual Loops:</span>
+          <span class="kv-val font-mono">{{ node.actualLoops }}</span>
+        </div>
+        <div class="kv-row" *ngIf="node.actualStartupTime != null">
+          <span class="kv-key">Startup Time:</span>
+          <span class="kv-val font-mono">{{ node.actualStartupTime }} ms</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buffer I/O Cache -->
+    <div class="detail-section" *ngIf="node.sharedHitBlocks != null || node.sharedReadBlocks != null">
+      <h4 class="section-heading">Buffer & Memory Cache</h4>
+      <div class="key-value-list">
+        <div class="kv-row">
+          <span class="kv-key">Shared Buffer Hits:</span>
+          <span class="kv-val font-mono text-emerald">{{ (node.sharedHitBlocks || 0) | number }} blocks</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Disk Reads:</span>
+          <span class="kv-val font-mono text-amber">{{ (node.sharedReadBlocks || 0) | number }} blocks</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Cache Hit Ratio:</span>
+          <span class="kv-val font-mono text-cyan">{{ getBufferRatio() }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Child Plans -->
+    <div class="detail-section" *ngIf="node.plans && node.plans.length > 0">
+      <h4 class="section-heading">Sub-Operations ({{ node.plans.length }})</h4>
+      <div class="child-pills">
+        <button
+          *ngFor="let child of node.plans"
+          (click)="onSelectChild(child)"
+          class="child-pill-btn"
+        >
+          <span>{{ child.nodeType }}</span>
+          <span class="pill-time font-mono" *ngIf="child.actualTotalTime != null">{{ child.actualTotalTime }}ms</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

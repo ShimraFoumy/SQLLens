@@ -1,0 +1,132 @@
+.results-container {
+  display: flex;
+  flex-direction: column;
+  height: 580px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.results-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: rgba(10, 14, 26, 0.7);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.toolbar-left, .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.toolbar-meta {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.page-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0.2rem;
+  border-radius: 3px;
+}
+.page-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-indicator {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 45px;
+  text-align: center;
+}
+
+/* Table */
+.table-viewport {
+  flex: 1;
+  overflow: auto;
+}
+
+.results-grid {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.8rem;
+}
+
+.results-grid th {
+  position: sticky;
+  top: 0;
+  background: #0d1324;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border-medium);
+  font-weight: 600;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+.th-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.col-name {
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.col-type {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: normal;
+  text-transform: lowercase;
+}
+
+.results-grid td {
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  white-space: nowrap;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.results-grid tr:hover td {
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.row-num-col, .row-num-cell {
+  width: 50px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.cell-null {
+  color: var(--text-dim);
+  font-style: italic;
+}

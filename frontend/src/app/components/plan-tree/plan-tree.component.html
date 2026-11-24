@@ -1,0 +1,133 @@
+<div class="tree-wrapper" #svgContainer (mousedown)="startDrag($event)" (wheel)="onWheel($event)">
+  <!-- Floating Canvas Controls -->
+  <div class="canvas-controls glass-panel">
+    <button class="ctrl-btn" (click)="zoomIn()" title="Zoom In">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+    </button>
+    <span class="zoom-badge font-mono">{{ (zoom * 100).toFixed(0) }}%</span>
+    <button class="ctrl-btn" (click)="zoomOut()" title="Zoom Out">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+    </button>
+    <button class="ctrl-btn" (click)="resetView()" title="Fit / Reset View">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+    </button>
+  </div>
+
+  <!-- Legend -->
+  <div class="tree-legend glass-panel">
+    <span class="legend-item"><span class="legend-dot dot-index"></span>Index Scan</span>
+    <span class="legend-item"><span class="legend-dot dot-join"></span>Join</span>
+    <span class="legend-item"><span class="legend-dot dot-seq"></span>Seq Scan</span>
+    <span class="legend-item"><span class="legend-dot dot-agg"></span>Aggregate/Sort</span>
+  </div>
+
+  <svg
+    class="plan-svg"
+    [attr.width]="'100%'"
+    [attr.height]="'100%'"
+    [class.dragging]="isDragging"
+  >
+    <defs>
+      <!-- Grid Pattern -->
+      <pattern id="canvas-grid" width="30" height="30" patternUnits="userSpaceOnUse">
+        <circle cx="15" cy="15" r="1" fill="rgba(255, 255, 255, 0.08)" />
+      </pattern>
+
+      <!-- Connection Arrow Marker -->
+      <marker
+        id="arrow"
+        viewBox="0 0 10 10"
+        refX="6"
+        refY="5"
+        markerWidth="6"
+        markerHeight="6"
+        orient="auto-start-reverse"
+      >
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="rgba(99, 102, 241, 0.6)" />
+      </marker>
+    </defs>
+
+    <!-- Canvas Background -->
+    <rect width="100%" height="100%" fill="url(#canvas-grid)" />
+
+    <!-- Root Transform Group for Pan & Zoom -->
+    <g [attr.transform]="'translate(' + panX + ',' + panY + ') scale(' + zoom + ')'">
+      <!-- Curved Connecting Links -->
+      <g class="tree-links">
+        <path
+          *ngFor="let link of links"
+          [attr.d]="link.path"
+          class="tree-link-path"
+          marker-end="url(#arrow)"
+        />
+      </g>
+
+      <!-- Nodes -->
+      <g class="tree-nodes">
+        <g
+          *ngFor="let node of layoutNodes"
+          [attr.transform]="'translate(' + node.x + ',' + node.y + ')'"
+          (click)="selectNode(node.data)"
+          class="plan-node-group"
+          [class.selected]="selectedNode?.id === node.data.id"
+          [ngClass]="getNodeColorClass(node.data)"
+        >
+          <!-- Node Background Card -->
+          <rect
+            [attr.width]="node.width"
+            [attr.height]="node.height"
+            rx="10"
+            ry="10"
+            class="node-card-bg"
+          />
+
+          <!-- Node Header Area: Type + Relation -->
+          <foreignObject [attr.width]="node.width" [attr.height]="node.height">
+            <div class="node-html-card" [class.active-selected]="selectedNode?.id === node.data.id">
+              <div class="node-card-header">
+                <span class="node-type-label" [title]="node.data.nodeType">
+                  {{ getNodeBadgeLabel(node.data) }}
+                </span>
+                <span *ngIf="node.data.actualTotalTime != null" class="node-time font-mono">
+                  {{ node.data.actualTotalTime }}ms
+                </span>
+              </div>
+
+              <div class="node-relation-row" *ngIf="node.data.relationName || node.data.indexName">
+                <span class="relation-name" [title]="node.data.relationName || node.data.indexName">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                  {{ node.data.relationName || node.data.indexName }}
+                </span>
+                <span *ngIf="node.data.alias && node.data.alias !== node.data.relationName" class="relation-alias">
+                  as {{ node.data.alias }}
+                </span>
+              </div>
+
+              <!-- Cost progress bar -->
+              <div class="node-cost-row">
+                <div class="cost-bar-track">
+                  <div
+                    class="cost-bar-fill"
+                    [style.width.%]="node.data.costPercentage || 0"
+                  ></div>
+                </div>
+                <span class="cost-pct font-mono">{{ node.data.costPercentage || 0 }}% cost</span>
+              </div>
+
+              <!-- Metrics row: Rows & Filter Indicator -->
+              <div class="node-metrics-row">
+                <span class="row-stats font-mono">
+                  Rows: <strong>{{ node.data.actualRows != null ? node.data.actualRows : (node.data.planRows || 0) }}</strong>
+                </span>
+                <span *ngIf="node.data.filter" class="filter-indicator" title="Has Filter Predicate">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                  Filter
+                </span>
+              </div>
+            </div>
+          </foreignObject>
+        </g>
+      </g>
+    </g>
+  </svg>
+</div>

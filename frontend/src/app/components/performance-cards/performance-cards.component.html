@@ -1,0 +1,65 @@
+<div class="kpi-grid animate-fade-in" *ngIf="summary">
+  <!-- Card 1: Execution Time -->
+  <div class="kpi-card glass-panel border-cyan">
+    <div class="kpi-icon-wrap icon-cyan">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+    </div>
+    <div class="kpi-content">
+      <span class="kpi-label">Execution Time</span>
+      <span class="kpi-value font-mono">{{ summary.executionTimeMs }} <span class="unit">ms</span></span>
+      <span class="kpi-subtext">Planning: {{ summary.planningTimeMs }} ms</span>
+    </div>
+  </div>
+
+  <!-- Card 2: Total Plan Cost -->
+  <div class="kpi-card glass-panel border-indigo">
+    <div class="kpi-icon-wrap icon-indigo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+    </div>
+    <div class="kpi-content">
+      <span class="kpi-label">Estimated Cost</span>
+      <span class="kpi-value font-mono">{{ summary.totalCost | number:'1.1-2' }}</span>
+      <span class="kpi-subtext">{{ summary.totalOperations }} tree operations</span>
+    </div>
+  </div>
+
+  <!-- Card 3: Rows Returned & Scanned -->
+  <div class="kpi-card glass-panel border-emerald">
+    <div class="kpi-icon-wrap icon-emerald">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+    </div>
+    <div class="kpi-content">
+      <span class="kpi-label">Rows Returned</span>
+      <span class="kpi-value font-mono">{{ summary.rowsReturned | number }}</span>
+      <span class="kpi-subtext">{{ summary.totalRowsScanned | number }} rows scanned</span>
+    </div>
+  </div>
+
+  <!-- Card 4: Bottleneck Operation -->
+  <div class="kpi-card glass-panel border-rose">
+    <div class="kpi-icon-wrap icon-rose">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+    </div>
+    <div class="kpi-content">
+      <span class="kpi-label">Slowest Node</span>
+      <span class="kpi-value-sm font-mono" [title]="summary.bottleneckNode">{{ summary.bottleneckNode }}</span>
+      <span class="kpi-subtext text-rose">{{ summary.bottleneckTimeMs }} ms exclusive</span>
+    </div>
+  </div>
+
+  <!-- Card 5: Index Status & Buffer Ratio -->
+  <div class="kpi-card glass-panel border-amber">
+    <div class="kpi-icon-wrap icon-amber">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+    </div>
+    <div class="kpi-content">
+      <span class="kpi-label">Buffer Cache Hit</span>
+      <span class="kpi-value font-mono">{{ summary.bufferHitRatio }} <span class="unit">%</span></span>
+      <span class="kpi-subtext">
+        <span [class.text-emerald]="summary.usesIndex" [class.text-amber]="!summary.usesIndex">
+          {{ summary.usesIndex ? '✓ Index Accelerated' : '⚠ Sequential Scan' }}
+        </span>
+      </span>
+    </div>
+  </div>
+</div>

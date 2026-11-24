@@ -1,0 +1,43 @@
+<div class="tips-container animate-fade-in">
+  <div class="tips-header">
+    <div class="header-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      <h3>Query Optimization Advisor</h3>
+    </div>
+    <span class="badge badge-cyan">{{ tips.length }} Insights</span>
+  </div>
+
+  <div class="tips-list">
+    <div
+      *ngFor="let tip of tips"
+      class="tip-card glass-panel"
+      [class.tip-critical]="tip.level === 'CRITICAL'"
+      [class.tip-warning]="tip.level === 'WARNING'"
+      [class.tip-success]="tip.level === 'SUCCESS'"
+      [class.tip-info]="tip.level === 'INFO'"
+    >
+      <div class="tip-card-header">
+        <div class="tip-badge-wrap">
+          <span
+            class="badge"
+            [class.badge-rose]="tip.level === 'CRITICAL'"
+            [class.badge-amber]="tip.level === 'WARNING'"
+            [class.badge-green]="tip.level === 'SUCCESS'"
+            [class.badge-blue]="tip.level === 'INFO'"
+          >
+            {{ tip.level }}
+          </span>
+          <span class="tip-affected font-mono" *ngIf="tip.affectedNode">[{{ tip.affectedNode }}]</span>
+        </div>
+        <h4 class="tip-title">{{ tip.title }}</h4>
+      </div>
+
+      <p class="tip-message">{{ tip.message }}</p>
+
+      <div class="tip-recommendation-box" *ngIf="tip.recommendation">
+        <span class="rec-label">Recommendation:</span>
+        <code class="rec-code font-mono">{{ tip.recommendation }}</code>
+      </div>
+    </div>
+  </div>
+</div>
